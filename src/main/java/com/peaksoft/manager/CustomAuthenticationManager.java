@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 
@@ -18,6 +19,7 @@ import java.util.Collections;
 public class CustomAuthenticationManager implements AuthenticationManager {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -33,12 +35,12 @@ public class CustomAuthenticationManager implements AuthenticationManager {
             );
         }
 
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new CustomException(
                     ("Invalid password")
             );
         }
 
-        return new UsernamePasswordAuthenticationToken(email, null, Collections.singletonList(user.getRole()));
+        return new UsernamePasswordAuthenticationToken(email, user.getPassword(), Collections.singletonList(user.getRole()));
     }
 }
